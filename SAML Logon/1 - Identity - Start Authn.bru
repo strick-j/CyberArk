@@ -1,0 +1,109 @@
+meta {
+  name: 1 - Identity - Start Authn
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://{{ispssSubdomain}}.cyberark.cloud/api/idadmin/Security/StartAuthentication
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+     "User": "{{ispssUser}}",
+     "Version": "1.0"                
+  }
+}
+
+vars:post-response {
+  SessionId: res.body.Result.SessionId
+  TenantId: res.body.Result.TenantId
+  Mech1: 
+  Mech2: 
+  Token: 
+}
+
+assert {
+  res.status: eq 200
+  res.body.Result.SessionId: isDefined
+  res.body.success: eq true
+}
+
+script:post-response {
+  let preferred_mech0 ="UP";
+  let preferred_mech1 ="SMS";
+  
+  // Save Session Id
+  if (res.body.Result.SessionId) {
+    bru.setEnvVar("SessionId", res.body.Result.SessionId)
+  }
+  
+  // Save Session Id
+  if (res.body.Result.TenantId) {
+    bru.setEnvVar("TenantId", res.body.Result.TenantId)
+  }
+  
+  for (var i = 0; i < res.body.Result.Challenges[0].Mechanisms.length; i++) {
+    if (res.body.Result.Challenges[0].Mechanisms[i].Name == preferred_mech0) {
+      bru.setEnvVar("Mech1", res.body.Result.Challenges[0].Mechanisms[i].MechanismId)
+    }
+  }
+  
+  for (var i = 0; i < res.body.Result.Challenges[1].Mechanisms.length; i++) {
+    if (res.body.Result.Challenges[1].Mechanisms[i].Name == preferred_mech1) {
+      bru.setEnvVar("Mech2", res.body.Result.Challenges[1].Mechanisms[i].MechanismId)
+    }
+  }
+  
+  // Save auth result if present
+  if (res.body.Result.Token, 'Result.Token') {
+    bru.setEnvVar("Token", res.body.Result.Token )
+  }
+}
+
+tests {
+  let preferred_mech0 ="UP"
+  let preferred_mech1 ="SMS"
+  
+  //const responseJson = res.getBody();
+  
+  /*
+  if (_.get(responseJson, 'Result.SessionId')) {
+      pm.collectionVariables.set("SessionId", responseJson.Result.SessionId )
+  }
+  /*
+  // Get Tenant Id 
+  if (_.get(responseJson, 'Result.TenantId')) {
+      pm.collectionVariables.set("TenantId", responseJson.Result.TenantId )
+  }
+  
+  // Get Mechanism ID 1
+  if (_.get(responseJson, 'Result.Challenges')) {
+  
+      if (_.get(responseJson, 'Result.Challenges[0]')) {
+  
+          for (var i = 0;i<responseJson.Result.Challenges[0].Mechanisms.length;i++) {
+              if (responseJson.Result.Challenges[0].Mechanisms[i].Name == preferred_mech0 ) {
+                  console.log(responseJson.Result.Challenges[0].Mechanisms[i].Name)
+                  pm.collectionVariables.set("Mech1", responseJson.Result.Challenges[0].Mechanisms[i].MechanismId )
+              }
+          }
+      }
+      if (_.get(responseJson, 'Result.Challenges[1]')) {
+  
+          // Get Mechanism ID 2
+          for (var i = 0;i<responseJson.Result.Challenges[1].Mechanisms.length;i++) {
+              if (responseJson.Result.Challenges[1].Mechanisms[i].Name == preferred_mech1 ) {
+                  console.log(responseJson.Result.Challenges[1].Mechanisms[i].Name)
+                  pm.collectionVariables.set("Mech2", responseJson.Result.Challenges[1].Mechanisms[i].MechanismId )
+              }
+          }
+      }
+  }
+  // Save auth result if present
+  if (_.get(responseJson, 'Result.Token')) {
+      pm.collectionVariables.set("Token", responseJson.Result.Token )
+  }*/
+}

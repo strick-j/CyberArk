@@ -1,0 +1,43 @@
+meta {
+  name: 2 - Identity - Advance Authn 1 (UP)
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://{{ispssSubdomain}}.cyberark.cloud/api/idadmin/Security/AdvanceAuthentication
+  body: json
+  auth: none
+}
+
+headers {
+  X-IDAP-NATIVE-CLIENT: true
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "SessionId": "{{SessionId}}",
+    "MechanismId": "{{Mech1}}",
+    "Action": "Answer",
+    "Answer": "{{ispssPassword}}"               
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.Result.Summary: eq StartNextChallenge
+}
+
+script:post-response {
+  // Save Session Id
+  if (res.body.Result.SessionId) {
+    bru.setEnvVar("SessionId", res.body.Result.SessionId)
+  }
+  
+  // Save auth result if present
+  if (res.body.Result.Token, 'Result.Token') {
+    bru.setEnvVar("Token", res.body.Result.Token )
+  }
+}

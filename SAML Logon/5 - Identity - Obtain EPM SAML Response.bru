@@ -1,0 +1,40 @@
+meta {
+  name: 5 - Identity - Obtain EPM SAML Response
+  type: http
+  seq: 5
+}
+
+post {
+  url: https://{{TenantId}}.id.cyberark.cloud/run?appkey={{epmIdentityAppKey}}
+  body: none
+  auth: bearer
+}
+
+query {
+  appkey: {{epmIdentityAppKey}}
+}
+
+headers {
+  X-IDAP-NATIVE-CLIENT: true
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{Token}}
+}
+
+vars:post-response {
+  SAMLResponse: 
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const cheerio = require('cheerio');
+  const $ = cheerio.load(res.body);
+  
+  const samlResponse = $("input[name$='SAMLResponse']");
+  bru.setEnvVar("SAMLResponse", samlResponse[0].attribs.value)
+}

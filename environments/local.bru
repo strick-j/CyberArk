@@ -1,0 +1,19 @@
+vars {
+  epmDispatcherAddress: login.epm.cyberark.com
+  epmVersion: 24.3.1.3970
+  epmApplicationID: Bruno
+  epmUsername: {{process.env.EPM_USERNAME}}
+  epmPassword: {{process.env.EPM_PASSWORD}}
+  epmIdentityAppKey: {{process.env.ISPSS_EPM_APP_KEY}}
+  ispssSubdomain: {{process.env.ISPSS_SUBDOMAIN}}}
+  ispssUser: {{process.env.ISPSS_USERNAME}}
+  ispssPassword: {{process.env.ISPSS_PASSWORD}}
+}
+vars:secret [
+  SessionId,
+  TenantId,
+  Mech1,
+  Mech2,
+  Token,
+  SAMLResponse
+]
